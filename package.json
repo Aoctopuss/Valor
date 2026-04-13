@@ -1,11 +1,10 @@
 {
   "name": "almost_there",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tailwindcss -i ./public/assets/css/input.css -o ./public/assets/css/app.css --watch"
+  "dev": "tailwindcss -i ./src/input.css -o ./public/assets/css/app.css --watch"
   },
   "repository": {
     "type": "git",
@@ -16,10 +15,11 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.9",
     "tailwindcss": "^4.2.2"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2"
   }
 }
-
