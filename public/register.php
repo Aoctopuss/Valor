@@ -2,33 +2,26 @@
 include_once('../src/db.php');
 
 session_start();
-$logedIn = null;
+
+$created = null;
 
 if (isset($_POST['username']) && isset($_POST['password'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
+    $loginHash = password_hash($password, PASSWORD_ARGON2ID);
+    $encryptionSalt = random_bytes(16);
 
     try {
-        $sql = "SELECT * FROM users WHERE username = ?";
+        $sql = "INSERT INTO users (username, password_hash, encrypted_salt) VALUES (?, ?, ?)";
         $stmt = $pdo->prepare($sql);
 
-        $stmt->execute([$username]);
-        $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password_hash'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['encrypted_salt'] = $user['encrypted_salt'];
-
-            $logedIn = true;
-            echo "logged in succefully";
-            exit;
-        }
+        $stmt->execute([$username, $loginHash, $encryptionSalt]);
+        $created = true;
     } catch (PDOException $e) {
         error_log($e -> getMessage());
-        $logedIn = false;
-        echo "Logging in failed!";
+        $created = false;
     }
 }
 
@@ -73,11 +66,11 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
                 </div>
 
                 <div class="mb-8">
-                    <h1 class="text-4xl font-semibold mb-6 tracking-tight">
+                    <h1 class="text-4xl font-semibold tracking-tight mb-6">
                         <a class="text-[#991a18]">V</a>alor
                     </h1>
                     <p class="text-gray-500 text-lg font-semibold">
-                        log into <a class="text-[#991a18]">V</a><a class="">alor</a>
+                        Sign up for <a class="text-[#991a18]">V</a><a class="">alor</a>
                     </p>
                 </div>
 
@@ -87,7 +80,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
                             for="username"
                             class="block mb-1 text-base font-bold text-white tracking-wide"
                         >
-                            username
+                            Username
                         </label>
                         <input
                             type="text"
@@ -127,11 +120,11 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
                         type="submit"
                         class="w-full bg-[#991a18] text-gray-200 text-lg font-bold rounded-xl p-3 hover:bg-red-950 active:bg-red-950 transition-colors shadow-lg shadow-black/30"
                     >
-                        Unlock Vault
+                        Create account
                     </button>
                 </form>
             </div>       
-            <p class="mt-10 text-white">New to Valor? <a href="register.php" class="text-sky-300 font-semibold underline">Create a account</a></p>
+            <p class="mt-10 text-white">Already have a account? <a href="login.php" class="text-sky-300 font-semibold underline">Log in</a></p>
         </div>
     </body>
 </html>
