@@ -2,12 +2,12 @@
 
 **Valor is a free, open source password manager where you control your own data.**
 
-Most password managers make you trust a company with your passwords. Valor works differently — everything gets encrypted on your device before it goes anywhere near a server. That means even if someone broke into the database, they would get nothing useful.
+Most password managers make you trust a company with your passwords. Valor works differently — everything gets encrypted on your device before it ever reaches a server. Even if someone broke into the database, they would get nothing useful.
 
 ## What it does
 
 - Save, view, edit and delete passwords in your vault
-- Encrypts everything with AES-256 before it hits the database
+- Everything is encrypted with AES-256 before it hits the database
 - Simple, mobile-friendly interface built with Tailwind CSS
 - Self-hostable — run it on your own server and your data stays yours
 
@@ -15,31 +15,20 @@ Most password managers make you trust a company with your passwords. Valor works
 
 - PHP 8.1 or higher
 - MySQL 8.0 or higher
-- Node.js 18 or higher (only needed to compile the CSS)
+- Node.js 18 or higher
 
 ## Installation
 
-### 1. Clone the repo
 ```bash
 git clone https://github.com/Aoctopuss/Valor.git
 cd Valor
-```
-
-### 2. Check PHP is ready
-Run this to make sure the encryption extension is active:
-```bash
-php -m | grep sodium
-```
-### 3. Set up the database
-```bash
 mysql -u root -p < database/schema.sql
 cp config.example.php config.php
-```
-
-### 5. Run it
-```bash
+npm install && npm run build
 php -S localhost:8000 -t public
 ```
+
+Fill in your database credentials in `config.php` before running.
 
 ## Licence
 
