@@ -1,7 +1,8 @@
 <?php 
+session_start();
 include_once('../src/db.php');
 
-session_start();
+
 $logedIn = null;
 
 if (isset($_POST['username']) && isset($_POST['password'])) {
@@ -10,10 +11,10 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
 
 
     try {
-        $sql = "SELECT * FROM users WHERE username = ?";
+        $sql = "SELECT * FROM users WHERE username = :username";
         $stmt = $pdo->prepare($sql);
-
-        $stmt->execute([$username]);
+        $stmt->bindParam(':username',$username,PDO::PARAM_STR);
+        $stmt->execute();
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password_hash'])) {
@@ -22,7 +23,8 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
             $_SESSION['encrypted_salt'] = $user['encrypted_salt'];
 
             $logedIn = true;
-            echo "logged in succefully";
+            header("Location: index.php");
+            
             exit;
         }
     } catch (PDOException $e) {
@@ -87,7 +89,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
                             for="username"
                             class="block mb-1 text-base font-bold text-white tracking-wide"
                         >
-                            username
+                            Username
                         </label>
                         <input
                             type="text"
@@ -127,7 +129,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
                         type="submit"
                         class="w-full bg-[#991a18] text-gray-200 text-lg font-bold rounded-xl p-3 hover:bg-red-950 active:bg-red-950 transition-colors shadow-lg shadow-black/30"
                     >
-                        Unlock Vault
+                        Log in
                     </button>
                 </form>
             </div>       

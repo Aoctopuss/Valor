@@ -1,5 +1,7 @@
 <?php 
+session_start();
 include_once('../src/db.php');
+
 
 session_start();
 
