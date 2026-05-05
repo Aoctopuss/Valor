@@ -1,23 +1,41 @@
 DROP DATABASE IF EXISTS `Valor`;
 
-CREATE DATABASE  `valor`;
+CREATE DATABASE `valor`;
 
 USE `valor`;
 
-
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) UNIQUE,
-    password_hash varchar(255),
-    encrypted_salt VARBINARY(16)
+    username VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE passwords (
+CREATE TABLE user_keys (
+    user_id INT PRIMARY KEY,
+    kdf_salt VARBINARY(16) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE categories (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id int,
-    site_name VARCHAR(200),
-    encrypted_data VARBINARY(256),
-    iv VARBINARY(16),
-    tag VARBINARY(16),
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    user_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE vault_entries (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    site_name VARCHAR(200) NOT NULL,
+    username VARCHAR(255),
+    encrypted_password VARBINARY(512) NOT NULL,
+    iv VARBINARY(16) NOT NULL,
+    auth_tag VARBINARY(16) NOT NULL,
+    category_id INT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );

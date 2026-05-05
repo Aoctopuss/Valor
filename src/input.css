@@ -1,7 +1,15 @@
 @import "tailwindcss";
 
+@source "../../index.php";
+@source "../../login.php";
+@source "../../register.php";
+@source "../../../src/functions.php";
+@source "../../../src/db.php";
+@source "../js/main.js";
+@source "../js/login/index.js";
 
-
-@source "../../../src/views/**/*.php";
-@source "../../../index.php";
-@source "../../../src/*.php";
+@theme {
+    --color-body: #0c0c0c;
+    --color-text-body: #151516;
+    --color-red-text: #991a18;
+}
