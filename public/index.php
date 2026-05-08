@@ -21,7 +21,13 @@ function resolveCategory(PDO $pdo, int $userId): ?int {
     return !empty($existing) ? (int) $existing : null;
 }
 
-
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_category'])) {
+    $categoryId = $_POST['category_id'];
+    $stmt = $pdo->prepare("DELETE FROM categories WHERE id = ? AND user_id = ?");
+    $stmt->execute([$categoryId, $user_id]);
+    header("Location: index.php");
+    exit();
+}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['new_entry'])) {
     $site_name = $_POST['site_name'];
@@ -72,6 +78,17 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['update_entry'])) {
         $id,
         $user_id
     ]);
+    $deleteEmptyCategories = $pdo->prepare("
+    DELETE FROM categories
+    WHERE user_id = ?
+    AND id NOT IN (
+        SELECT DISTINCT category_id
+        FROM vault_entries
+        WHERE category_id IS NOT NULL
+    )
+");
+
+$deleteEmptyCategories->execute([$user_id]);
     header("Location: index.php");
     exit();
 }
@@ -80,15 +97,26 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['delete_entry'])) {
     $id = $_POST['entry_id'];
     $stmt = $pdo->prepare("DELETE FROM vault_entries WHERE id = ? AND user_id = ?");
     $stmt->execute([$id, $user_id]);
+    $deleteEmptyCategories = $pdo->prepare("
+    DELETE FROM categories
+    WHERE user_id = ?
+    AND id NOT IN (
+        SELECT DISTINCT category_id
+        FROM vault_entries
+        WHERE category_id IS NOT NULL
+    )
+");
+
+$deleteEmptyCategories->execute([$user_id]);
     header("Location: index.php");
     exit();
 }
 
 $stmt = $pdo->prepare("
-    SELECT v.*, c.name as category_name 
-    FROM vault_entries v
-    LEFT JOIN categories c ON c.id = v.category_id
-    WHERE v.user_id = ?
+    SELECT vault_entries.*, categories.name as category_name
+    FROM vault_entries
+    LEFT JOIN categories ON categories.id = vault_entries.category_id
+    WHERE vault_entries.user_id = ?
 ");
 $stmt->execute([$user_id]);
 $rows = $stmt->fetchAll();
@@ -153,6 +181,10 @@ $rows = $stmt->fetchAll();
                     <button class="categoryBtn flex-1 text-left px-3 py-2 rounded-lg hover:bg-text-body transition-colors text-gray-400 hover:text-white" data-category="<?= $cat['id'] ?>">
                         <?= htmlspecialchars($cat['name']) ?>
                     </button>
+                    <form method="POST" action="">
+                        <input type="hidden" name="category_id" value="<?= $cat['id'] ?>">
+                        <button type="submit" name="delete_category" class="text-gray-600 hover:text-red-500 transition-colors px-2 py-1 text-xs">✕</button>
+                    </form>
                 </li>
                 <?php endforeach; ?>
             </ul>
@@ -245,9 +277,8 @@ $rows = $stmt->fetchAll();
                         <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
                     <?php endforeach; ?>
                 </select>
-                <input type="text" name="new_category_name" placeholder="Or type a new category..."
+                <input type="text" name="new_category_name" placeholder="Create new category"
                     class="w-full bg-text-body border border-neutral-800 text-white rounded-lg p-2.5 outline-none focus:border-red-800 transition-colors placeholder:text-neutral-600 text-sm">
-                <p class="text-xs text-gray-600 mt-1">Typing a new name overrides the dropdown.</p>
             </div>
             <div class="flex items-center gap-2">
                 <button type="submit" name="update_entry" class="w-full bg-red-text text-white font-semibold rounded-lg p-2.5 transition-colors mt-2">
@@ -316,9 +347,8 @@ $rows = $stmt->fetchAll();
                         <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
                     <?php endforeach; ?>
                 </select>
-                <input type="text" name="new_category_name" placeholder="Or type a new category..."
+                <input type="text" name="new_category_name" placeholder="Create new category"
                     class="w-full bg-text-body border border-neutral-800 text-white rounded-lg p-2.5 outline-none focus:border-red-800 transition-colors placeholder:text-neutral-600 text-sm">
-                <p class="text-xs text-gray-600 mt-1">Typing a new name overrides the dropdown.</p>
             </div>
             <button type="submit" name="new_entry"
                 class="w-full bg-red-text hover:bg-red-800 text-white font-semibold rounded-lg p-2.5 transition-colors mt-2">
