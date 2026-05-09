@@ -5,10 +5,9 @@ A school project built for my eindproject. Valor is a web-based password manager
 ## What it does
 
 - Store, edit and delete passwords in a personal vault
-- Passwords are encrypted with AES-256 before they hit the database
+- Passwords are encrypted before they hit the database
 - Users can organise entries into custom categories
-- Includes password and username generation
-- Checks if a password has appeared in known data breaches via the Have I Been Pwned API
+- Includes password generation
 
 ## How it works
 
