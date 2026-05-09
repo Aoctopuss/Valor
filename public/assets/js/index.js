@@ -87,29 +87,27 @@ export function search() {
     });
 }
 
-
 export function categoryFilter() {
-    const buttons = document.querySelectorAll('.categoryBtn');
+    const buttons = document.querySelectorAll(".categoryBtn");
     if (!buttons.length) return;
 
-    buttons.forEach(button => {
-        button.addEventListener('click', () => {
-            buttons.forEach(btn => {
-                btn.classList.remove('bg-text-body', 'text-white');
-                btn.classList.add('text-gray-400');
+    buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+            buttons.forEach((btn) => {
+                btn.classList.remove("bg-text-body", "text-white");
+                btn.classList.add("text-gray-400");
             });
-            button.classList.add('bg-text-body', 'text-white');
-            button.classList.remove('text-gray-400');
+            button.classList.add("bg-text-body", "text-white");
+            button.classList.remove("text-gray-400");
 
             const selected = button.dataset.category;
-            document.querySelectorAll('.entryCard').forEach(card => {
-                if (selected === 'all' || card.dataset.category === selected) {
-                    card.style.display = 'block';
+            document.querySelectorAll(".entryCard").forEach((card) => {
+                if (selected === "all" || card.dataset.category === selected) {
+                    card.style.display = "block";
                 } else {
-                    card.style.display = 'none';
+                    card.style.display = "none";
                 }
             });
         });
     });
 }
-

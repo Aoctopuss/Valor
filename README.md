@@ -1,43 +1,32 @@
-# ***Valor***
+# Valor — Password Manager
 
-**Valor is a free, open source password manager where you control your own data.**
-
-Most password managers make you trust a company with your passwords. Valor works differently — everything gets encrypted on your device before it ever reaches a server. Even if someone broke into the database, they would get nothing useful.
+A school project built for my eindproject. Valor is a web-based password manager made with PHP, MySQL and Tailwind CSS.
 
 ## What it does
 
-- Save, view, edit and delete passwords in your vault
-- Everything is encrypted with AES-256 before it hits the database
-- Simple, mobile-friendly interface built with Tailwind CSS
-- Self-hostable — run it on your own server and your data stays yours
+- Store, edit and delete passwords in a personal vault
+- Passwords are encrypted with AES-256 before they hit the database
+- Users can organise entries into custom categories
+- Includes password and username generation
+- Checks if a password has appeared in known data breaches via the Have I Been Pwned API
 
-## What you need
+## How it works
 
-- PHP 8.1 or higher
-- MySQL 8.0 or higher
-- Node.js 18 or higher
+When a user registers, their master password is run through PBKDF2 to create an encryption key. That key is used to encrypt all vault passwords using AES-256-GCM. The key never gets stored in the database — only in the session while the user is logged in. This means even if the database were stolen, the passwords inside it would be unreadable.
 
-## Installation
+## Built with
 
-```bash
-git clone https://github.com/Aoctopuss/Valor.git
-cd Valor
-mysql -u root -p < database/schema.sql
-cp config.example.php config.php
-npm install && npm run build
-php -S localhost:8000 -t public
-```
+- PHP 8.1
+- MySQL 8.0
+- Tailwind CSS v4
+- JavaScript
 
-Fill in your database credentials in `config.php` before running.
+## Running it locally
+
+Paste the schema.sql into mysql and run apache.
+
+Fill in your database credentials in `db.php` before running.
 
 ## Licence
 
 Licensed under the [European Union Public Licence v1.2 (EUPL-1.2)](https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12).
-
-
-
-### temp notes 
-
-
-add section tab
-

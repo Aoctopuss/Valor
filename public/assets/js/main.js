@@ -1,4 +1,10 @@
-import { modal, changeEntry, search, generatePass, categoryFilter,   } from "./index.js";
+import {
+    modal,
+    changeEntry,
+    search,
+    generatePass,
+    categoryFilter,
+} from "./index.js";
 
 function displayPasswords() {
     const buttons = document.querySelectorAll(".passBtn");
@@ -55,10 +61,6 @@ function copyPass() {
         });
     });
 }
-
-
-
-
 
 generatePass();
 modal();
