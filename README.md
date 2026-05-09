@@ -11,7 +11,7 @@ A school project built for my eindproject. Valor is a web-based password manager
 
 ## How it works
 
-When a user registers, their master password is run through PBKDF2 to create an encryption key. That key is used to encrypt all vault passwords using AES-256-GCM. The key never gets stored in the database — only in the session while the user is logged in. This means even if the database were stolen, the passwords inside it would be unreadable.
+When a user registers, their master password is run through PBKDF2 to create an encryption key. That key is used to encrypt and decrypt all vault passwords. The key never gets stored in the database only in the session while the user is logged in. This means even if the data gets breached. The passwords inside it would be unreadable.
 
 ## Built with
 
