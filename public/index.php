@@ -5,6 +5,7 @@ include_once('../src/functions.php');
 
 $user_id = $_SESSION['user_id'];
 $key = $_SESSION['key'];
+$passwordValidation = null;
 
 $categoryStmt = $pdo->prepare("SELECT * FROM categories WHERE user_id = ?");
 $categoryStmt->execute([$user_id]);
@@ -24,64 +25,77 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['new_entry'])) {
     $site_name = $_POST['site_name'];
     $username = $_POST['username'];
     $password = $_POST['password'];
-    $category_id = Category($pdo, $user_id);
 
-    $result = encryptedPassword($password, $key);
+    $passwordValidation = passwordValidation($site_name, $username, $password);
 
-    $stmt = $pdo->prepare("
-        INSERT INTO vault_entries (user_id, site_name, username, encrypted_password, iv, auth_tag, category_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ");
-    $stmt->execute([
-        $user_id,
-        $site_name,
-        $username,
-        $result['encrypted_password'],
-        $result['iv'],
-        $result['auth_tag'],
-        $category_id
-    ]);
-    header("Location: index.php");
-    exit();
+    if (!$passwordValidation) {
+        $category_id = Category($pdo, $user_id);
+        $result = encryptedPassword($password, $key);
+        $stmt = $pdo->prepare("
+            INSERT INTO vault_entries (user_id, site_name, username, encrypted_password, iv, auth_tag, category_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            $user_id,
+            $site_name,
+            $username,
+            $result['encrypted_password'],
+            $result['iv'],
+            $result['auth_tag'],
+            $category_id
+        ]);
+        header("Location: index.php");
+        exit();
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['update_entry'])) {
     $site_name = $_POST['site_name'];
     $username = $_POST['username'];
     $password = $_POST['password'];
-    $category_id = Category($pdo, $user_id);
-    $id = $_POST['entry_id'];
 
-    $result = encryptedPassword($password, $key);
+    $passwordValidation = passwordValidation($site_name, $username, $password);
 
-    $stmt = $pdo->prepare("
-        UPDATE vault_entries 
-        SET site_name = ?, username = ?, encrypted_password = ?, iv = ?, auth_tag = ?, category_id = ?
-        WHERE id = ? AND user_id = ?
-    ");
-    $stmt->execute([
-        $site_name,
-        $username,
-        $result['encrypted_password'],
-        $result['iv'],
-        $result['auth_tag'],
-        $category_id,
-        $id,
-        $user_id
-    ]);
-    $deleteEmptyCategories = $pdo->prepare("
-    DELETE FROM categories
-    WHERE user_id = ?
-    AND id NOT IN (
-        SELECT DISTINCT category_id
-        FROM vault_entries
-        WHERE category_id IS NOT NULL
-    )
-");
-
-    $deleteEmptyCategories->execute([$user_id]);
-    header("Location: index.php");
-    exit();
+    if (!$passwordValidation) {
+        $category_id = Category($pdo, $user_id);
+        $id = $_POST['entry_id'];
+        $result = encryptedPassword($password, $key);
+        $stmt = $pdo->prepare("
+            UPDATE vault_entries 
+            SET site_name = ?, username = ?, encrypted_password = ?, iv = ?, auth_tag = ?, category_id = ?
+            WHERE id = ? AND user_id = ?
+        ");
+        $stmt->execute([
+            $site_name,
+            $username,
+            $result['encrypted_password'],
+            $result['iv'],
+            $result['auth_tag'],
+            $category_id,
+            $id,
+            $user_id
+        ]);
+        $deleteEmptyCategories = $pdo->prepare("
+            DELETE FROM categories
+            WHERE user_id = ?
+            AND id NOT IN (
+                SELECT DISTINCT category_id
+                FROM vault_entries
+                WHERE category_id IS NOT NULL
+            )
+        ");
+        $deleteEmptyCategories->execute([$user_id]);
+        header("Location: index.php");
+        exit();
+    } else {
+        $editData = [
+            'entry_id'    => $_POST['entry_id'],
+            'site_name'   => $site_name,
+            'username'    => $username,
+            'password'    => $password,
+            'category_id' => $_POST['category_id'] ?? ''
+        ];
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['delete_entry'])) {
@@ -147,7 +161,7 @@ $rows = $stmt->fetchAll();
         </div>
 
         <div class="flex items-center text-white cursor-pointer hover:text-red-text transition-colors">
-            <a href="../src/logout.php" class="flex flex-row items-center">
+            <a href="logout.php" class="flex flex-row items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" />
                 </svg>
@@ -157,6 +171,16 @@ $rows = $stmt->fetchAll();
     </nav>
 
     <div class="notification flex justify-center"></div>
+    <?php if ($passwordValidation): ?>
+    <span id="validation-error" 
+        data-form="<?= isset($_POST['new_entry']) ? 'new' : 'edit' ?>"
+        data-entry-id="<?= htmlspecialchars($editData['entry_id'] ?? '') ?>"
+        data-site="<?= htmlspecialchars($editData['site_name'] ?? '') ?>"
+        data-username="<?= htmlspecialchars($editData['username'] ?? '') ?>"
+        data-password="<?= htmlspecialchars($editData['password'] ?? '') ?>"
+        data-category="<?= htmlspecialchars($editData['category_id'] ?? '') ?>">
+    </span>
+<?php endif; ?>
 
     <div class="flex">
         <!--sidebar -->
@@ -273,6 +297,9 @@ $rows = $stmt->fetchAll();
                     <input type="text" name="new_category_name" placeholder="Create new category"
                         class="w-full bg-text-body border border-neutral-800 text-white rounded-lg p-2.5 outline-none focus:border-red-800 transition-colors placeholder:text-neutral-600 text-sm">
                 </div>
+                <?php if (  $passwordValidation): ?>
+                    <p class="text-red-500 text-sm"><?= htmlspecialchars($passwordValidation) ?></p>
+                <?php endif; ?>
                 <div class="flex items-center gap-2">
                     <button type="submit" name="update_entry" class="w-full bg-red-text text-white font-semibold rounded-lg p-2.5 transition-colors mt-2">
                         Save Changes
@@ -343,6 +370,9 @@ $rows = $stmt->fetchAll();
                     <input type="text" name="new_category_name" placeholder="Create new category"
                         class="w-full bg-text-body border border-neutral-800 text-white rounded-lg p-2.5 outline-none focus:border-red-800 transition-colors placeholder:text-neutral-600 text-sm">
                 </div>
+                <?php if ($passwordValidation): ?>
+                    <p class="text-red-500 text-sm"><?= htmlspecialchars($passwordValidation) ?></p>
+                <?php endif; ?>
                 <button type="submit" name="new_entry"
                     class="w-full bg-red-text hover:bg-red-800 text-white font-semibold rounded-lg p-2.5 transition-colors mt-2">
                     Save Entry

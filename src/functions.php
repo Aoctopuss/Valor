@@ -62,3 +62,10 @@ function Category(PDO $pdo, int $userId): ?int {
 
     return null;
 }
+
+function passwordValidation(string $site_name, string $username, string $password): ?string {
+    if (empty(trim($site_name)) || empty(trim($username)) || empty(trim($password))) {
+        return "Velden mogen niet leeg zijn!";
+    }
+    return null;
+}

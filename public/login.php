@@ -4,31 +4,34 @@ include_once('../src/db.php');
 
 $error = null;
 if (isset($_POST['username']) && isset($_POST['password'])) {
-    $username = $_POST['username'];
-    $masterPassword = $_POST['password'];
+    $username = trim($_POST['username']);
+    $masterPassword = trim($_POST['password']);
 
     $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
     $stmt->execute([$username]);
 
     $user = $stmt->fetch();
 
-
-    if (!$user) {
-        $error = ("no user found!");
+    if (empty($username) || empty($masterPassword)) {
+        $error = ("velden mogen niet leeg zijn!");
     } else {
-        if (password_verify($masterPassword, $user['password_hash'])) {
-            $stmt = $pdo->prepare("SELECT kdf_salt FROM user_keys WHERE user_id = ?");
-            $stmt->execute([$user['id']]);
-            $saltRow = $stmt->fetch();
-            $kdf_salt = $saltRow['kdf_salt'];
-            $key = hash_pbkdf2('sha256', $masterPassword, $kdf_salt, 600000, 32, true);
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['key'] = $key;
-            header("Location: index.php");
-            $isloggedin = true;
-            exit;
+        if (!$user) {
+            $error = ("no user found!");
         } else {
-            $isloggedin = false;
+            if (password_verify($masterPassword, $user['password_hash'])) {
+                $stmt = $pdo->prepare("SELECT kdf_salt FROM user_keys WHERE user_id = ?");
+                $stmt->execute([$user['id']]);
+                $saltRow = $stmt->fetch();
+                $kdf_salt = $saltRow['kdf_salt'];
+                $key = hash_pbkdf2('sha256', $masterPassword, $kdf_salt, 600000, 32, true);
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['key'] = $key;
+                header("Location: index.php");
+                $isloggedin = true;
+                exit;
+            } else {
+                $isloggedin = false;
+            }
         }
     }
 }

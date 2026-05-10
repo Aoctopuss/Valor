@@ -6,30 +6,34 @@ $error = null;
 if (isset($_POST['username']) && isset($_POST['password'])) {
 
     // usertable registration
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
 
     $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
     $stmt->execute([$username]);
 
     // authentication
-    if ($stmt->fetch()) {
-        $error = ("username already exists!");
+    if (empty($username) || empty($password)) {
+        $error = ("velden mogen niet leeg zijn!");
     } else {
-        $password_hash = password_hash($password, PASSWORD_ARGON2ID);
+        if ($stmt->fetch()) {
+            $error = ("username already exists!");
+        } else {
+            $password_hash = password_hash($password, PASSWORD_ARGON2ID);
 
-        $stmt = $pdo->prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)");
-        $stmt->execute([$username, $password_hash]);
-        $userId = $pdo->lastInsertId();
+            $stmt = $pdo->prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)");
+            $stmt->execute([$username, $password_hash]);
+            $userId = $pdo->lastInsertId();
 
-        $kdf_salt = random_bytes(16);
-        $stmt = $pdo->prepare("INSERT INTO user_keys (user_id, kdf_salt) VALUES (?, ?)");
-        $stmt->execute([$userId, $kdf_salt]);
-        $key = hash_pbkdf2('sha256', $password, $kdf_salt, 600000, 32, true);
-        $_SESSION['user_id'] = $userId;
-        $_SESSION['key'] = $key;
-        header("Location: index.php");
-        exit();
+            $kdf_salt = random_bytes(16);
+            $stmt = $pdo->prepare("INSERT INTO user_keys (user_id, kdf_salt) VALUES (?, ?)");
+            $stmt->execute([$userId, $kdf_salt]);
+            $key = hash_pbkdf2('sha256', $password, $kdf_salt, 600000, 32, true);
+            $_SESSION['user_id'] = $userId;
+            $_SESSION['key'] = $key;
+            header("Location: index.php");
+            exit();
+        }
     }
 }
 

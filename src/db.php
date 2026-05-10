@@ -1,8 +1,8 @@
 <?php 
 
 
-// $user = '/';
-// $pass = '/';
+$user = 'bit_academy';
+$pass = 'bit_academy';
 
 
 $dsn = 'mysql:host=localhost;dbname=valor;charset=utf8mb4';

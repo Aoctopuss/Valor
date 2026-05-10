@@ -4,6 +4,7 @@ import {
     search,
     generatePass,
     categoryFilter,
+    openModalWhenError,
 } from "./index.js";
 
 function displayPasswords() {
@@ -45,19 +46,23 @@ function copyPass() {
             const password = button.dataset.password;
             if (!password) return;
 
-            navigator.clipboard.writeText(password).then(() => {
-                const notification = document.querySelector(".notification");
-                if (!notification) return;
+            const temp = document.createElement("input");
+            temp.value = password;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand("copy");
+            document.body.removeChild(temp);
 
-                notification.innerHTML = `
-                <div class="bg-black mt-2 w-[120px] h-[40px] border rounded-md top-2 absolute flex items-center font-semibold px-4 text-center shadow-lg">
-                    <p class="text-white text-sm">Password copied!</p>
-                </div>`;
+            const notification = document.querySelector(".notification");
+            if (!notification) return;
+            notification.innerHTML = `
+            <div class="bg-black mt-2 w-[120px] h-[40px] border rounded-md top-2 absolute flex items-center font-semibold px-4 text-center shadow-lg">
+                <p class="text-white text-sm">Password copied!</p>
+            </div>`;
 
-                setTimeout(() => {
-                    notification.innerHTML = "";
-                }, 2000);
-            });
+            setTimeout(() => {
+                notification.innerHTML = "";
+            }, 2000);
         });
     });
 }
@@ -69,3 +74,4 @@ copyPass();
 displayPasswords();
 search();
 categoryFilter();
+openModalWhenError();

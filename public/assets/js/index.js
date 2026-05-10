@@ -38,6 +38,7 @@ export function changeEntry() {
         document.getElementById("edit-site-name").value = card.dataset.site;
         document.getElementById("edit-username").value = card.dataset.username;
         document.getElementById("edit-password").value = card.dataset.password;
+        document.getElementById('edit-category').value = card.dataset.category;
         document.getElementById("pass-modal").classList.remove("hidden");
     });
 }
@@ -110,4 +111,23 @@ export function categoryFilter() {
             });
         });
     });
+}
+
+
+export function openModalWhenError() {
+    const error = document.getElementById('validation-error');
+    if (!error) return;
+
+    if (error.dataset.form === 'new') {
+        document.getElementById('vault-item').classList.remove('hidden');
+        document.getElementById('modal-backdrop').classList.remove('hidden');
+    } else {
+        document.getElementById('edit-entry-id').value = error.dataset.entryId;
+        document.getElementById('edit-site-name').value = error.dataset.site;
+        document.getElementById('edit-username').value = error.dataset.username;
+        document.getElementById('edit-password').value = error.dataset.password;
+        document.getElementById('edit-category').value = error.dataset.category;
+
+        document.getElementById('pass-modal').classList.remove('hidden');
+    }
 }
