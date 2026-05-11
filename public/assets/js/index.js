@@ -119,6 +119,12 @@ export function openModalWhenError() {
     if (!error) return;
 
     if (error.dataset.form === 'new') {
+
+        document.getElementById('site_name_new_entry').value = error.dataset.site;
+        document.getElementById('generated-username').value = error.dataset.username;
+        document.getElementById('generated-password').value = error.dataset.password;
+        document.getElementById('new-category').value = error.dataset.category;
+
         document.getElementById('vault-item').classList.remove('hidden');
         document.getElementById('modal-backdrop').classList.remove('hidden');
     } else {

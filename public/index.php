@@ -46,6 +46,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['new_entry'])) {
         ]);
         header("Location: index.php");
         exit();
+    } else {
+        $newEntryData = [
+            'site_name' => $site_name,
+            'username' => $username,
+            'password' => $password,
+            'category_id' => $_POST['category_id'] ?? ''
+        ];
     }
 }
 
@@ -174,11 +181,11 @@ $rows = $stmt->fetchAll();
     <?php if ($passwordValidation): ?>
     <span id="validation-error" 
         data-form="<?= isset($_POST['new_entry']) ? 'new' : 'edit' ?>"
-        data-entry-id="<?= htmlspecialchars($editData['entry_id'] ?? '') ?>"
-        data-site="<?= htmlspecialchars($editData['site_name'] ?? '') ?>"
-        data-username="<?= htmlspecialchars($editData['username'] ?? '') ?>"
-        data-password="<?= htmlspecialchars($editData['password'] ?? '') ?>"
-        data-category="<?= htmlspecialchars($editData['category_id'] ?? '') ?>">
+        data-site="<?= htmlspecialchars($newEntryData['site_name'] ?? $editData['site_name'] ?? '') ?>"
+        data-username="<?= htmlspecialchars($newEntryData['username'] ?? $editData['username'] ?? '') ?>"
+        data-password="<?= htmlspecialchars($newEntryData['password'] ?? $editData['password'] ?? '') ?>"
+        data-category="<?= htmlspecialchars($newEntryData['category_id'] ?? $editData['category_id'] ?? '') ?>"
+        data-entry-id="<?= htmlspecialchars($editData['entry_id'] ?? '') ?>">
     </span>
 <?php endif; ?>
 
@@ -336,7 +343,7 @@ $rows = $stmt->fetchAll();
             <form method="POST" action="" class="flex flex-col gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-400 mb-1.5">Site name</label>
-                    <input required type="text" name="site_name"
+                    <input required type="text" name="site_name" id="site_name_new_entry"
                         class="w-full bg-text-body border border-neutral-800 text-white rounded-lg p-2.5 outline-none focus:border-red-800 transition-colors placeholder:text-neutral-600">
                 </div>
                 <div>
